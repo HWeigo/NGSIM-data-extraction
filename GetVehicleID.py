@@ -45,14 +45,18 @@ for vehicle_ID in VehicleID_Merge_Ori:
     # vehicle_lane = data_Lane67[idx,13]
 
     for frame in vehicle_frame:
-        if vehicle_y[int(frame)] > 280:
+        if vehicle_y[int(frame)] > 410:   # 270
             break
-        elif vehicle_x[int(frame)] < 75:
+        elif vehicle_x[int(frame)] < 80:  # 75
             print('Delete'+str(vehicle_ID))
             VehicleID_Merge = np.delete(VehicleID_Merge, np.where(VehicleID_Merge == vehicle_ID))
             break
+
 print(VehicleID_Merge)
-# np.savetxt('../NGSIM_I80_1stTimePeriod_MergeVehicleID.csv',VehicleID_Merge, delimiter=',')
+
+# 剔除连续变道
+
+np.savetxt('../NGSIM_I80_1stTimePeriod_MergeVehicleID_new.csv',VehicleID_Merge, delimiter=',')
 
 
 # idx = (data_Lane7[:,0] == 5)
