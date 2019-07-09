@@ -6,7 +6,7 @@ import numpy as np
 # data = dataOri[(dataOri['Location'] == 'i-80')]
 # data.to_csv("../NGSIM_80_Ori.csv",index=None)
 
-dataI80 = pd.read_csv('../NGSIM_i80_Ori.csv')
+dataI80 = pd.read_csv('../NGSIM_i80_Ori_1stPeriod.csv')
 
 Lane_x = []
 for i in range(1,8):
