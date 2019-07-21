@@ -45,4 +45,5 @@ for vehicle in range(VehicleID_Ego.size):
 
 print(VehicleID)
 
-np.savetxt('../NGSIM_i80_1stTimePeriod_MergeAndEgo.csv', VehicleID, delimiter=',')
+# np.savetxt('../NGSIM_i80_1stTimePeriod_MergeAndEgo.csv', VehicleID, delimiter=',')
+
