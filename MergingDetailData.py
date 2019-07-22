@@ -1,14 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-VehicleID_Merge = np.loadtxt('../NGSIM_i80_1stTimePeriod_MergeAndEgo.csv', delimiter=',', skiprows=1, usecols=0)
-VehicleID_Ego = np.loadtxt('../NGSIM_i80_1stTimePeriod_MergeAndEgo.csv', delimiter=',', skiprows=1, usecols=0)
-data_lane567 = np.loadtxt('../NGSIM_i80_1stTimePeriod_Lane567_simplification.csv', delimiter=',', skiprows=1,
-                          usecols=(range(0, 17)))
-
-print(VehicleID_Merge.size)
-print(VehicleID_Ego.size)
-
 
 #  输入（车号， 数据集） 提取对应车号的桢数据， x坐标， y坐标， 速度， 加速度
 def data_extraction_vehicle(vehicle_id, data):
@@ -18,21 +10,98 @@ def data_extraction_vehicle(vehicle_id, data):
     local_y = data[idx, 5]
     v_vel = data[idx, 11]
     v_acc = data[idx, 12]
-    return frame, local_x, local_y, v_vel, v_acc
+    precedings = data[idx, 14]
+    followings = data[idx, 15]
+    return frame, local_x, local_y, v_vel, v_acc, precedings, followings
 
 
-def data_extraction_vehicle_master(vehicle_id, frame, data):
-    frames = data_extraction_vehicle(vehicle_id, data)[0]
-    y_coordinates = data_extraction_vehicle(vehicle_id, data)[2]
-    velocities = data_extraction_vehicle(vehicle_id, data)[3]
-    accelerations = data_extraction_vehicle(vehicle_id, data)[4]
+def data_extraction_vehicle_common(vehicle_id, frame, data):
+    frames, x_coordinates, y_coordinates, velocities, accelerations = data_extraction_vehicle(vehicle_id, data)[:5]
     idx_frame = np.argwhere(frames == frame)
+    x_coordinate = x_coordinates[int(idx_frame[0])]
     y_coordinate = y_coordinates[int(idx_frame[0])]
     velocity = velocities[int(idx_frame[0])]
     acceleration = accelerations[int(idx_frame[0])]
-    print(y_coordinate)
-    print(velocity)
-    print(acceleration)
+    # print("x_coordinate: " + str(x_coordinate))
+    # print("y_coordinate: " + str(y_coordinate))
+    # print("velocity: " + str(velocity))
+    # print("acceleration: " + str(acceleration))
+    return x_coordinate, y_coordinate, velocity, acceleration
+
+
+def data_extraction_vehicle_master(vehicle_id, frame, data):
+    frames, x_coordinates, y_coordinates, velocities, accelerations = data_extraction_vehicle(vehicle_id, data)[:5]
+    idx_frame = np.argwhere(frames == frame)
+    x_coordinate = x_coordinates[int(idx_frame[0])]
+    y_coordinate = y_coordinates[int(idx_frame[0])]
+    gap2end = 859 - y_coordinate
+    velocity = velocities[int(idx_frame[0])]
+    # acceleration = accelerations[int(idx_frame[0])]
+    acceleration = 0
+    for i in range(-2, 3):
+        print(i)
+        acceleration += accelerations[int(idx_frame[0] + i)] / 5
+
+    print("x_coordinate: " + str(x_coordinate))
+    print("y_coordinate: " + str(y_coordinate))
+    print("velocity: " + str(velocity))
+    print("acceleration: " + str(acceleration))
+    print("gap to the end: " + str(gap2end))
+    return x_coordinate, y_coordinate, velocity, acceleration, gap2end
+
+
+def data_extraction_vehicle_ego(vehicle_id, frame, data):
+    frames, x_coordinates, y_coordinates, velocities, accelerations, precedings, followings = data_extraction_vehicle(
+        vehicle_id, data)
+    idx_frame = np.argwhere(frames == frame)
+    x_coordinate = x_coordinates[int(idx_frame[0])]
+    y_coordinate = y_coordinates[int(idx_frame[0])]
+    velocity = velocities[int(idx_frame[0])]
+    acceleration = 0
+    for i in range(-2, 3):
+        print(i)
+        acceleration += accelerations[int(idx_frame[0] + i)] / 5
+    preceding_id, following_id = find_proceeding_following(precedings, followings, frames, frame)
+
+    if preceding_id != 0:
+        precding_y = data_extraction_vehicle_common(preceding_id, frame, data)[1]
+        gap_front = precding_y - y_coordinate
+    else:
+        gap_front = 500
+
+    if following_id != 0:
+        following_y = data_extraction_vehicle_common(following_id, frame, data)[1]
+        gap_behind = y_coordinate - following_y
+    else:
+        gap_behind = 500
+
+    if acceleration < 0:
+        label_ego = 0  # 减速
+    else:
+        label_ego = 1  # 加速
+
+    print("x_coordinate: " + str(x_coordinate))
+    print("y_coordinate: " + str(y_coordinate))
+    print("velocity: " + str(velocity))
+    print("acceleration: " + str(acceleration))
+    print("preceding_id: " + str(preceding_id))
+    print("following_id: " + str(following_id))
+    print("gap_front: " + str(gap_front))
+    print("gap_behind: " + str(gap_behind))
+
+    return x_coordinate, y_coordinate, velocity, acceleration, gap_front, gap_behind, label_ego
+
+
+def find_proceeding_following(precedings, followings, frames, frame):
+    idx_frame = np.argwhere(frames == frame)
+    preceding_id = precedings[int(idx_frame[0])]
+    following_id = followings[int(idx_frame[0])]
+    return preceding_id, following_id
+
+
+def calc_gap(vehicle_front, vehicle_behind, frame):
+    y_coodinate_front = data_extraction_vehicle(vehicle_front, frame)[1]
+    y_coodinate_behind = data_extraction_vehicle(vehicle_behind, frame)[1]
 
 
 def plot_frame_x(vehicle_id, data):
@@ -102,8 +171,5 @@ def plot_frame_x_v(vehicle_id, data):
     plt.pause(0.1)
     # plt.close()
 
-
 # for vehicle in VehicleID_Merge:
 #     plot_frame_x_v(vehicle, data_lane567)
-# plot_frame_x_v(124, data_lane567)
-data_extraction_vehicle_master(124, 825, data_lane567)
