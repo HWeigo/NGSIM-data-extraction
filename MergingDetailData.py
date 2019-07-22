@@ -35,8 +35,10 @@ def data_extraction_vehicle_master(vehicle_id, frame, data):
     x_coordinate = x_coordinates[int(idx_frame[0])]
     y_coordinate = y_coordinates[int(idx_frame[0])]
     gap2end = 859 - y_coordinate
-    velocity = velocities[int(idx_frame[0])]
-    # acceleration = accelerations[int(idx_frame[0])]
+
+    velocity = 0
+    for i in range(-2, 3):
+        velocity += velocities[int(idx_frame[0] + i)] / 5
     acceleration = 0
     for i in range(-2, 3):
         print(i)
@@ -56,11 +58,14 @@ def data_extraction_vehicle_ego(vehicle_id, frame, data):
     idx_frame = np.argwhere(frames == frame)
     x_coordinate = x_coordinates[int(idx_frame[0])]
     y_coordinate = y_coordinates[int(idx_frame[0])]
-    velocity = velocities[int(idx_frame[0])]
+
+    velocity = 0
+    for i in range(-2, 3):
+        velocity += velocities[int(idx_frame[0] + i)] / 5
     acceleration = 0
     for i in range(-2, 3):
-        print(i)
         acceleration += accelerations[int(idx_frame[0] + i)] / 5
+
     preceding_id, following_id = find_proceeding_following(precedings, followings, frames, frame)
 
     if preceding_id != 0:

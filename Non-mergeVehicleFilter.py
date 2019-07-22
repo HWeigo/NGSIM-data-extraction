@@ -86,4 +86,4 @@ for i in range(Col_masterID_array.size):
 
 print(output)
 #
-np.savetxt('../NGSIM_i80_1stTimePeriod_NonMerge.csv', output, delimiter=',')
+# np.savetxt('../NGSIM_i80_1stTimePeriod_NonMerge.csv', output, delimiter=',')
